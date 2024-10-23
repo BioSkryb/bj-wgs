@@ -1,0 +1,2 @@
+biosampleName,reads,read1,read2
+chr22_testsample1,1000000,s3://bioskryb-public-data/pipeline_resources/dev-resources/local_test_files/chr22_testsample1_S1_L001_R1_001.fastq.gz,s3://bioskryb-public-data/pipeline_resources/dev-resources/local_test_files/chr22_testsample1_S1_L001_R2_001.fastq.gz

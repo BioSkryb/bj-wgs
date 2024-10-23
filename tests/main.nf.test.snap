@@ -1,0 +1,14 @@
+{
+    "selected_metrics_mqc": {
+        "content": [
+            "nf-wgs-pipeline_selected_metrics_mqc.txt:md5,8cf17fc201c9284455c36d41fe55685f"
+        ],
+        "timestamp": "2024-09-18T14:52:10+0000"
+    },
+    "all_metrics_mqc": {
+        "content": [
+            "nf-wgs-pipeline_all_metrics_mqc.txt:md5,838f4a4f50c69ff19e2bef9c1d8957b3"
+        ],
+        "timestamp": "2024-09-18T14:52:10+0000"
+    }
+}

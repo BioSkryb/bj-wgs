@@ -1,0 +1,51 @@
+nextflow_pipeline {
+
+    name "Test Workflow main.nf"
+    script "main.nf"
+
+    test("WGS_test") {
+
+        when {
+            params {
+                publish_dir = "${outputDir}/results"
+                timestamp = "test"
+                architecture = "x86"
+                input_csv = "$baseDir/tests/data/inputs/input.csv"
+            }
+        }
+
+        then {
+            assertAll(
+                // Check if the workflow was successful
+                { assert workflow.success },
+
+                // Verify existence of the multiqc report HTML file
+                {assert new File("${outputDir}/results_test/multiqc/multiqc_report.html").exists()},
+
+                // Check for a match in the all metrics MQC text file
+                {assert snapshot (path("${outputDir}/results_test/secondary_analyses/metrics/nf-wgs-pipeline_all_metrics_mqc.txt")).match("all_metrics_mqc")},
+
+                // Check for a match in the selected metrics MQC text file
+                {assert snapshot (path("${outputDir}/results_test/secondary_analyses/metrics/nf-wgs-pipeline_selected_metrics_mqc.txt")).match("selected_metrics_mqc")},
+
+                // Check for a match in the sentieonmetrics text file
+                // {assert snapshot (path("${outputDir}/results_test/secondary_analyses/alignment/chr22_testsample1.dedup_sentieonmetrics.txt")).match("sentieonmetrics")},
+
+                // Verify existence of the bam file
+                {assert new File("${outputDir}/results_test/secondary_analyses/alignment/chr22_testsample1.bam.bai").exists()},
+
+                // Verify existence of the dnascope vcf file
+                {assert new File("${outputDir}/results_test/secondary_analyses/variant_calls_dnascope/chr22_testsample1_dnascope.vcf.gz.tbi").exists()},
+
+                // Verify existence of the snpEff file
+                {assert new File("${outputDir}/results_test/tertiary_analyses/variant_annotation/snpeff/chr22_testsample1_snpEff.csv").exists()},
+
+                // Verify existence of the snpEff version file
+                {assert new File("${outputDir}/results_test/tertiary_analyses/variant_annotation/snpeff/snpEff_version.yml").exists()}
+
+            )
+        }
+
+    }
+
+}
