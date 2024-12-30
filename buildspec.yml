@@ -23,6 +23,7 @@ phases:
       - echo $PASSWORD | docker login --username AWS --password-stdin 597246834581.dkr.ecr.us-east-1.amazonaws.com
       - echo "Checking if Docker can pull from Shared-Assets"
       - docker pull 597246834581.dkr.ecr.us-east-1.amazonaws.com/miscellaneous:sentieon-202112-05
+      - aws s3 cp s3://bioskryb-shared-data/sentieon.lic sentieon_eval.lic
 
   build:
     commands:
