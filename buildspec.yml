@@ -1,0 +1,46 @@
+version: 0.2
+env:
+  parameter-store:
+    build_ssh_key: "/codebuild/ssh-key"
+    nextflow_scm: "/nextflow/scm"
+phases:
+  install: 
+    commands:
+      - set -x
+      - mkdir -p ~/.ssh
+      - echo "$build_ssh_key" > ~/.ssh/id_rsa
+      - chmod 600 ~/.ssh/id_rsa
+      - ssh-keygen -F github.com || ssh-keyscan github.com >>~/.ssh/known_hosts
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
+      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+      - curl -s https://get.nextflow.io | bash && chmod +x nextflow && mv nextflow /usr/bin/nextflow
+      - curl -fsSL https://code.askimed.com/install/nf-test | bash && chmod +x nf-test && mv nf-test /usr/bin/nf-test
+      - echo $nextflow_scm > ~/.nextflow/scm
+      - echo "Checking if Docker is running..."
+      - docker ps || echo "Docker is not running"
+      - aws --version
+      - PASSWORD=$(aws ecr get-login-password --region us-east-1)
+      - echo $PASSWORD | docker login --username AWS --password-stdin 597246834581.dkr.ecr.us-east-1.amazonaws.com
+      - echo "Checking if Docker can pull from Shared-Assets"
+      - docker pull 597246834581.dkr.ecr.us-east-1.amazonaws.com/miscellaneous:sentieon-202112-05
+      - aws s3 cp s3://bioskryb-shared-data/sentieon.lic sentieon_eval.lic
+
+  build:
+    commands:
+      - echo Test started on `date`
+      - nf-test test --tap report.tap --junitxml report.xml
+  post_build:
+    commands:
+      - echo Test completed on `date`
+      - echo "Printing the contents of nextflow.log..."
+      - find . -name "nextflow.log" -exec cat {} \;
+      - echo "Displaying paths and contents of all .command. files..."
+      - find . -type f -name ".command.*" -exec sh -c 'echo "Path $1"; cat $1' _ {} \;
+      - echo "Print the contents of the report.tap file..."
+      - cat report.tap
+reports:
+  test-xml-reports:
+    files:
+      - "report.xml"
+    file-format: "JUNITXML"
+

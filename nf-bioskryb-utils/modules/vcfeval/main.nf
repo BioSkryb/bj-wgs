@@ -31,7 +31,7 @@ process VCFEVAL {
     #! /bin/bash
     set +u
 
-    NAME=\$(echo -e ${id_sample} | sed 's/.id//')
+    NAME=\$(echo -e ${id_sample} | sed 's/\\.id\$//')
     SAMPLE_STRING=\$(echo -e "${reference_name},\${NAME}")
     OPTIONS=\$(echo -e "${other_options} --vcf-score-field ${score_metric}")
     

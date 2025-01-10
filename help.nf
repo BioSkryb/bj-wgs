@@ -72,6 +72,9 @@ def helpMessage() {
         --subsample_array           LIST    Specifies a list of read counts for subsampling with seqtk. 
                                             To enable subsampling, ensure that the --skip_subsampling parameter is set to false. 
                                             Provide the read counts as comma-separated values.
+
+        --min_reads                 VAL     Minimum number of reads required for analysis. Samples with fewer reads will be flagged.
+                                            DEFAULT: 1000
       
         --help                      BOOL    Display help message
 
