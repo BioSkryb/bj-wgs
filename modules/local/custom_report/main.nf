@@ -10,7 +10,8 @@ process CUSTOM_REPORT {
     
     input:
     path(files)
-    path(input_csv)
+    path(read_counts_csv)
+    val(min_reads)
     path(ado_full_summary)
     val(subsample_array)
     val(publish_dir)
@@ -24,7 +25,7 @@ process CUSTOM_REPORT {
     
     script:
     """
-    python3 /scripts/custom_report.py -s '*sentieonmetrics.txt' -m '*MAPD' -f '*.fastp.json' -i '$input_csv' -a '$ado_full_summary' -p 'wgs' -o 'Summary' -n '$subsample_array'
+    python3 /scripts/custom_report.py -s '*sentieonmetrics.txt' -m '*MAPD' -f '*.fastp.json' -i '$read_counts_csv' -r '$min_reads' -a '$ado_full_summary' -p 'wgs' -o 'Summary' -n '$subsample_array'
 
     echo custom_report: v0.7 > custom_report_version.yml
     
@@ -35,7 +36,8 @@ process CUSTOM_REPORT {
 workflow CUSTOM_REPORT_WF{
     take:
         ch_metrics
-        ch_input_csv
+        ch_read_counts_csv
+        ch_min_reads
         ch_ado_full_summary
         ch_subsample_array
         ch_publish_dir
@@ -43,7 +45,8 @@ workflow CUSTOM_REPORT_WF{
     main:
         CUSTOM_REPORT ( 
                         ch_metrics,
-                        ch_input_csv,
+                        ch_read_counts_csv,
+                        ch_min_reads,
                         ch_ado_full_summary,
                         ch_subsample_array,
                         ch_publish_dir,

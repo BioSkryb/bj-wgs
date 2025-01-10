@@ -24,6 +24,7 @@ include { BCFTOOLS_VIEW } from '../nf-bioskryb-utils/modules/bcftools/view/main.
 include { SNPEFF_ANNOTATION_WF } from '../nf-bioskryb-utils/modules/snpeff/main.nf' addParams(timestamp: params.timestamp)
 include { MULTIQC_WF } from '../nf-bioskryb-utils/modules/multiqc/main.nf' addParams(timestamp: params.timestamp)
 include { REPORT_VERSIONS_WF } from '../nf-bioskryb-utils/modules/bioskryb/report_tool_versions/main.nf' addParams(timestamp: params.timestamp)
+include { COUNT_READS_FASTQ_WF } from '../nf-bioskryb-utils/modules/bioskryb/custom_read_counts/main.nf' addParams(timestamp: params.timestamp)
 
 params.reference                    = params.genomes [ params.genome ] [ 'reference' ]
 params.base_metrics_intervals       = params.genomes [ params.genome ] [ 'base_metrics_intervals' ]
@@ -41,24 +42,36 @@ params.snpeff_db                    = params.genomes [ params.genome ] [ 'snpeff
 params.snpeff_genome_name           = params.genomes [ params.genome ] [ 'snpeff_genome_name' ]
 params.roi_intervals                = params.genomes [ params.genome ] [ 'roi_intervals' ]
 params.refseq                       = params.genomes [ params.genome ] [ 'refseq' ]
-params.dnascope_model               = params.genomes [ params.genome ] [ params.platform ] [ params.dnascope_model_selection ] [ params.mode ] [ 'dnascope_model' ]
-params.vcfeval_baseline_vcf         = params.genomes [ params.genome ] [ params.giab_reference_name ] [ 'vcfeval_baseline_vcf' ]
-params.vcfeval_baseline_vcf_index   = params.genomes [ params.genome ] [ params.giab_reference_name ] [ 'vcfeval_baseline_vcf_index' ]
-params.vcfeval_baseline_regions     = params.genomes [ params.genome ] [ params.giab_reference_name ] [ 'vcfeval_baseline_regions' ]
-params.giab_genome_name             = params.genomes [ params.genome ] [ params.giab_reference_name ] [ 'giab_genome_name' ]
-params.vcfeval_reference_sdf_ref    = params.genomes [ params.genome ] [ 'vcfeval_reference_sdf_ref']
+dnascope_model                      = ""
+if ( params.genome == 'GRCh38' ) {
+    dnascope_model               = params.genomes [ params.genome ] [ params.platform ] [ params.dnascope_model_selection ] [ params.mode ] [ 'dnascope_model' ]
+    params.vcfeval_baseline_vcf         = params.genomes [ params.genome ] [ params.giab_reference_name ] [ 'vcfeval_baseline_vcf' ]
+    params.vcfeval_baseline_vcf_index   = params.genomes [ params.genome ] [ params.giab_reference_name ] [ 'vcfeval_baseline_vcf_index' ]
+    params.vcfeval_baseline_regions     = params.genomes [ params.genome ] [ params.giab_reference_name ] [ 'vcfeval_baseline_regions' ]
+    params.giab_genome_name             = params.genomes [ params.genome ] [ params.giab_reference_name ] [ 'giab_genome_name' ]
+    params.vcfeval_reference_sdf_ref    = params.genomes [ params.genome ] [ 'vcfeval_reference_sdf_ref']
+}
 
 if ( params.mode == 'wgs' ) {
     params.wgs_or_target_intervals      = params.genomes [ params.genome ] [ 'wgs_or_target_intervals' ]
     params.calling_intervals_filename   = params.genomes [ params.genome ] [ 'calling_intervals_filename' ]
-    params.vcfeval_bed_regions          = params.genomes [ params.genome ] [ params.giab_reference_name ] [ 'vcfeval_bed_regions' ]
+    if ( params.genome == 'GRCh38' ) {
+        params.vcfeval_bed_regions          = params.genomes [ params.genome ] [ params.giab_reference_name ] [ 'vcfeval_bed_regions' ]
+    }
 }
 
 if ( params.mode == 'exome' ) {
     params.wgs_or_target_intervals      = params.genomes [ params.genome ] [ params.exome_panel ] [ 'wgs_or_target_intervals' ]
     params.calling_intervals_filename   = params.genomes [ params.genome ] [ params.exome_panel ] [ 'calling_intervals_filename' ]
-    params.vcfeval_bed_regions          = params.genomes [ params.genome ] [ params.exome_panel ] [ 'vcfeval_bed_regions' ]
+    if ( params.genome == 'GRCh38' ) {
+        params.vcfeval_bed_regions          = params.genomes [ params.genome ] [ params.exome_panel ] [ 'vcfeval_bed_regions' ]
+    }
 }
+
+// Override variant caller for GRCm39 genome (make sure to use the below variable in the downstream instead of params.variant_caller)
+variant_caller_modified = (params.genome == 'GRCm39') ? 'haplotyper' : params.variant_caller
+println "INFO: Variant caller is set to ${variant_caller_modified} for ${params.genome} genome"
+
 
 workflow WGS_WF {
 
@@ -66,6 +79,7 @@ workflow WGS_WF {
         ch_input_csv
         ch_reads
         ch_dummy_file
+        ch_min_reads
 
     main:
 
@@ -105,7 +119,26 @@ workflow WGS_WF {
                 ch_reads = SEQTK_WF.out.reads_sampledName
             }
         }
-        
+
+        COUNT_READS_FASTQ_WF (
+                                ch_reads,
+                                params.publish_dir,
+                                params.enable_publish
+                            )
+        COUNT_READS_FASTQ_WF.out.read_counts
+        .map { sample_id, files, read_count -> 
+            [sample_id, files, read_count.toInteger()]
+        }
+        .branch {
+            small: it[2] < ch_min_reads
+            large: it[2] >= ch_min_reads
+        }
+        .set { branched_reads }
+
+        ch_fastqs = branched_reads.large.map { sample_id, files, read_count ->
+            tuple(sample_id, files)
+        }
+
         /*
         ========================================================================================
             SENTIEON SECONDARY WORKFLOW
@@ -113,7 +146,7 @@ workflow WGS_WF {
         */
         SENTIEON_SECONDARY_WF ( 
                                 params.genome,
-                                ch_reads,
+                                ch_fastqs,
                                 params.reference,
                                 params.dbsnp,
                                 params.dbsnp_index,
@@ -123,10 +156,10 @@ workflow WGS_WF {
                                 params.onekg_omni_index,
                                 params.calling_intervals_filename,
                                 params.ploidy,
-                                params.dnascope_model,
+                                dnascope_model,
                                 params.pcrfree,
                                 params.platform,
-                                params.variant_caller,
+                                variant_caller_modified,
                                 params.publish_dir,
                                 params.enable_publish
                              )
@@ -200,6 +233,8 @@ workflow WGS_WF {
                 ch_ado_summary_table = Channel.fromPath("$projectDir/assets/ado_dummy_file.txt", checkIfExists: true).collect()
             }
 
+        } else {
+            ch_ado_summary_table = Channel.fromPath("$projectDir/assets/ado_dummy_file.txt", checkIfExists: true).collect()
         }
         
         /*
@@ -257,7 +292,8 @@ workflow WGS_WF {
 
         CUSTOM_REPORT_WF ( 
                             ch_merge_metrics_report.collect(),
-                            ch_input_csv,
+                            COUNT_READS_FASTQ_WF.out.combined_read_counts,
+                            ch_min_reads,
                             ch_ado_summary_table,
                             params.subsample_array,
                             params.publish_dir,
@@ -395,12 +431,15 @@ workflow WGS_WF {
             session_id: workflow.sessionId,
             mode: params.mode,
             genome: params.genome,
-            variant_caller: params.variant_caller,
-            dnascope_model: params.dnascope_model_selection,
+            variant_caller: variant_caller_modified,
             skip_Variant_Annotation: params.skip_variant_annotation,
             skip_Evaluate_Variant_Calling: params.skip_vcfeval,
             skip_ADO_Benchmarking: params.skip_ado
         ]
+
+        if (variant_caller_modified == 'dnascope') {
+            params_meta['dnascope_model'] = params.dnascope_model_selection
+        }
 
         MULTIQC_WF ( collect_mqc,
                     params_meta,
