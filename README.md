@@ -3,7 +3,7 @@
 
 BJ-WGS pipeline is a scalable and reproducible bioinformatics pipeline to process single-cell sequencing data from ResolveDNA Whole Genome Amplification or any single-cell or bulk sequencing data. The pipeline currently supports human and mouse sequencing data but can certainly be extended to other model systems. It supports sequencing data from Illumina, Ultima, and Element. The pipeline takes raw sequencing data in form of fastq/cram files and performs alignment, removes duplicate reads, base calibrates the reads, and performs variant calling with haplotype caller and DNAScope caller. For Illumina sequencing data, users have option to use primary template amplication (PTA) corrected DNAScope model to do variant calling.
 
-# Pipeline Overview
+# Pipeline Overview 
 Following are the steps and tools that pipeline uses to perform the analyses:
 
 - Map reads to reference genome using SENTIEON BWA MEM
