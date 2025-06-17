@@ -20,6 +20,10 @@ process PREPROCESS_VCF {
         echo "Running DNAscope VCF preprocess"
         # filter wildtypes and normalize
         bcftools view --threads ${task.cpus} -i 'GT!="0/0"' ${input_vcf[0]} | bcftools norm --threads ${task.cpus} -m -any --check-ref s -f ${reference}/genome.fa | bcftools view --threads ${task.cpus} -i 'GT!="0/0"' | bcftools +fill-tags | bcftools view -Oz -o _temp_${sample_name}.vcf.gz
+    elif zgrep -q '##DeepVariant' ${input_vcf[0]}; then
+        echo "Running DeepVariant VCF preprocess"
+        # filter wildtypes and normalize
+        bcftools view --threads ${task.cpus} -i 'GT!="0/0"' ${input_vcf[0]} | bcftools norm --threads ${task.cpus} -m -any --check-ref s -f ${reference}/genome.fa | bcftools view --threads ${task.cpus} -i 'GT!="0/0"' | bcftools +fill-tags | bcftools view -Oz -o _temp_${sample_name}.vcf.gz
     elif zgrep -q 'ID=TNscope' ${input_vcf[0]}; then
         echo "Running TNscope VCF preprocess"
         normal_sample_name=\$(bcftools query -l ${input_vcf[0]} | tail -1)

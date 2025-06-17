@@ -62,6 +62,9 @@ def helpMessage() {
         --skip_variant_annotation   BOOL    Whether to skip variant annotation
                                             DEFAULT: ${params.skip_annotation}
 
+        --skip_sigprofile           BOOL    Whether to skip Mutational Signature
+                                            DEFAULT: ${params.skip_sigprofile}
+
         --platform                  STR     Select the sequencing platform. 
                                             Available options - Illumina, Ultima, Element
                                             DEFAULT: Illumina

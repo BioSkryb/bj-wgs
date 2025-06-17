@@ -132,6 +132,7 @@ This pipeline includes several optional modules. You can choose to include or ex
 - `--skip_gene_coverage`: Set this to `true` to exclude the gene coverage module. By default, it is set to `false`.
 - `--skip_ado`: Set this to `true` to exclude the ADO module. By default, it is set to `true`.
 - `--skip_subsampling`: Set this to `false` to enable the seqtk subsampling module. By default, it is set to `true`, which excludes the subsampling process.
+- `--skip_sigprofile`: Set this to `true` to disable the Mutational Signature module. By default, it is set to `false`.
 
 **Outputs**
 
@@ -179,6 +180,9 @@ Script Options: see nextflow.config
 
     --skip_variant_annotation   BOOL    Whether to skip variant annotation
                                         DEFAULT: null
+
+    --skip_sigprofile           BOOL    Whether to skip Mutational Signature
+                                        DEFAULT: false
 
     --platform                  STR     Select the sequencing platform. 
                                         Available options - Illumina, Ultima, Element

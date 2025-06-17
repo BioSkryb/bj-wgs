@@ -11,6 +11,9 @@ nextflow_pipeline {
                 timestamp = "test"
                 architecture = "x86"
                 input_csv = "$baseDir/tests/data/inputs/input.csv"
+                max_cpus = 4
+                max_memory = "15.GB"
+                skip_vcfeval = false
             }
         }
 
