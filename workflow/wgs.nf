@@ -165,7 +165,7 @@ workflow WGS_WF {
                             )
         COUNT_READS_FASTQ_WF.out.read_counts
         .map { sample_id, files, read_count_file -> 
-            def read_count = read_count_file.text.trim().toLong()
+            def read_count = read_count_file.readLines()[0].trim().toLong()
             [sample_id, files, read_count]
         }
         .branch { read ->
