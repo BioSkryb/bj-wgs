@@ -17,8 +17,13 @@ process CREATE_VCFEVAL_OVERALL_METRICS {
 
     script:
     """
-    cat vcfeval_results_mqc.tsv | grep -v "#score" > temp
-    mv temp vcfeval_results_mqc.tsv
+    cat vcfeval_results_mqc_snps.tsv | head -n1 > temp
+    cat vcfeval_results_mqc_snps.tsv | grep -v "score" >> temp
+    mv temp vcfeval_results_mqc_snps.tsv
+    
+    cat vcfeval_results_mqc_indels.tsv | head -n1 > temp
+    cat vcfeval_results_mqc_indels.tsv | grep -v "score" >> temp
+    mv temp vcfeval_results_mqc_indels.tsv
 
     Rscript /usr/local/bin/rscript_vcfeval_all_metrics.R
     

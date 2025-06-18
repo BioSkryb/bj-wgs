@@ -2,12 +2,12 @@ nextflow.enable.dsl=2
 
 // IMPORT MODULES
 
-include { IDENTIFY_GERMLINE_HETS } from '../../modules/bioskryb/ado/identify_germline_hets/main.nf' addParams(timestamp: params.timestamp)
-include { EXTRACT_HET_SITES } from '../../modules/bioskryb/ado/extract_het_sites/main.nf' addParams(timestamp: params.timestamp)
-include { SLICE_HET_INTERVALS } from '../../modules/bioskryb/ado/slice_het_byintervals/main.nf' addParams(timestamp: params.timestamp)
-include { CREATE_ADO_TABLE } from '../../modules/bioskryb/ado/create_ado_table/main.nf' addParams(timestamp: params.timestamp)
-include { SUMMARIZE_ADO_INTERVALS } from '../../modules/bioskryb/ado/summarize_ado_intervals_r/main.nf' addParams(timestamp: params.timestamp)
-include { CONCAT_SUMMARY_ADO_INTERVALS } from '../../modules/bioskryb/ado/concat_summary_ado_intervals/main.nf' addParams(timestamp: params.timestamp)
+include { IDENTIFY_GERMLINE_HETS } from '../../modules/bioskryb/ado/identify_germline_hets/main.nf'
+include { EXTRACT_HET_SITES } from '../../modules/bioskryb/ado/extract_het_sites/main.nf'
+include { SLICE_HET_INTERVALS } from '../../modules/bioskryb/ado/slice_het_byintervals/main.nf'
+include { CREATE_ADO_TABLE } from '../../modules/bioskryb/ado/create_ado_table/main.nf'
+include { SUMMARIZE_ADO_INTERVALS } from '../../modules/bioskryb/ado/summarize_ado_intervals_r/main.nf'
+include { CONCAT_SUMMARY_ADO_INTERVALS } from '../../modules/bioskryb/ado/concat_summary_ado_intervals/main.nf'
 
 workflow ADO_WF{
     take:

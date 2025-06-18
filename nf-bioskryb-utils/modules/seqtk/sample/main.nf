@@ -111,7 +111,6 @@ workflow{
     SEQTK_WF (
                         ch_reads,
                         params.is_fasterq,
-                        params.n_reads,
                         params.read_length,
                         params.seqtk_sample_seed,
                         params.publish_dir,
