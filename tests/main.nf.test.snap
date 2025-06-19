@@ -1,14 +1,14 @@
 {
     "selected_metrics_mqc": {
         "content": [
-            "nf-wgs-pipeline_selected_metrics_mqc.txt:md5,2de9d0099b90c0e1230be62769ee82e5"
+            "nf-wgs-pipeline_selected_metrics_mqc.txt:md5,b1a30a5b6f6a30d6937b948671fc0e6d"
         ],
-        "timestamp": "2024-12-16T14:26:00+0000"
+        "timestamp": "2025-04-15T11:29:44+0000"
     },
     "all_metrics_mqc": {
         "content": [
-            "nf-wgs-pipeline_all_metrics_mqc.txt:md5,c8413e465a5cec06cf2fff7c22a20d58"
+            "nf-wgs-pipeline_all_metrics_mqc.txt:md5,2db86adb1eafb41449e553e19de68f24"
         ],
-        "timestamp": "2024-12-16T14:26:00+0000"
+        "timestamp": "2025-04-15T11:29:44+0000"
     }
 }

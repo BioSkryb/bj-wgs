@@ -48,11 +48,12 @@ process VCFEVAL {
         --template ${reference_sdf_ref} \
         \${OPTIONS} \
         --sample=\${SAMPLE_STRING} \
-        --output-mode ${output_mode}
+        --output-mode ${output_mode} \
+	    --roc-subset snp,indel
 
     cd "vcfeval_results_${score_metric}_\${NAME}/"
     
-    for file in *;do mv \${file} "res_vcfeval_\${NAME}_\${file}";done
+    for file in ls *;do mv \${file} "res_vcfeval_${sample_name}_\${file}";done
     
     mv res_vcfeval_* ../
     

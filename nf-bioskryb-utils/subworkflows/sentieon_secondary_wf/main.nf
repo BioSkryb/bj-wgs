@@ -2,9 +2,9 @@ nextflow.enable.dsl=2
 params.timestamp = ""
 
 
-include { SENTIEON_DNASCOPE } from '../../modules/sentieon/driver/dnascope/main.nf' addParams( timestamp: params.timestamp )
-include { SENTIEON_HAPLOTYPER } from '../../modules/sentieon/driver/haplotyper/main.nf' addParams( timestamp: params.timestamp )
-include { SENTIEON_ALIGNMENT } from '../../modules/sentieon/driver/alignment/main.nf' addParams( timestamp: params.timestamp )
+include { SENTIEON_DNASCOPE } from '../../modules/sentieon/driver/dnascope/main.nf'
+include { SENTIEON_HAPLOTYPER } from '../../modules/sentieon/driver/haplotyper/main.nf'
+include { SENTIEON_ALIGNMENT } from '../../modules/sentieon/driver/alignment/main.nf'
 
 workflow SENTIEON_SECONDARY_WF {
     take:
@@ -98,57 +98,4 @@ workflow SENTIEON_SECONDARY_WF {
         dnascope_vcf = dnascope_vcf
         version = SENTIEON_ALIGNMENT.out.version
     
-}
-
-workflow {
-    
-    params.reference                    = WorkflowWGS.getGenomeAttribute( params, 'reference' )
-    params.intervals                    = WorkflowWGS.getGenomeAttribute( params, 'base_metrics_intervals' )
-    params.dbsnp                        = WorkflowWGS.getGenomeAttribute( params, 'dbsnp' )
-    params.dbsnp_index                  = WorkflowWGS.getGenomeAttribute( params, 'dbsnp_index' )
-    params.mills                        = WorkflowWGS.getGenomeAttribute( params, 'mills' )
-    params.mills_index                  = WorkflowWGS.getGenomeAttribute( params, 'mills_index' )
-    params.onekg_omni                   = WorkflowWGS.getGenomeAttribute( params, 'onekg_omni' )
-    params.onekg_omni_index             = WorkflowWGS.getGenomeAttribute( params, 'onekg_omni_index' )
-    params.dnascope_model               = WorkflowWGS.getGenomeAttribute( params, 'dnascope_model' )
-
-    if ( params.mode == 'wgs' ) {
-        params.calling_intervals_filename   = WorkflowWGS.getGenomeAttribute( params, 'calling_intervals_filename' )
-    }
-    
-    if ( params.mode == 'exome' ) {
-        params.calling_intervals_filename   = WorkflowWGS.getExomeAttribute( params, 'calling_intervals_filename' )
-
-        log.info """\
-        interval       : ${ params.wgs_or_target_intervals }
-        \n
-        """
-    }
-
-    
-    ch_primary_reads = Channel.fromFilePairs( params.reads , size: -1 , checkExists: true )
-                            .map { tag, pair -> subtags = (tag =~ /(.*)_(S\d+)_(L0+\d+)/)[0]; [subtags[1], pair] }
-    
-    
-    
-    
-    SENTIEON_SECONDARY_WF ( 
-                                params.genome,
-                                ch_primary_reads,
-                                params.reference,
-                                params.dbsnp,
-                                params.dbsnp_index,
-                                params.mills,
-                                params.mills_index,
-                                params.onekg_omni,
-                                params.onekg_omni_index,
-                                params.calling_intervals_filename,
-                                params.ploidy,
-                                params.dnascope_model,
-                                params.pcrfree,
-                                params.platform,
-                                params.variant_caller,
-                                params.publish_dir,
-                                params.enable_publish
-                             )
 }
